@@ -468,6 +468,8 @@ epics::pvData::Field::const_shared_pointer P4PType_guess(PyObject *obj)
     pvd::FieldCreatePtr create(pvd::getFieldCreate());
 
     if(0) {
+    } else if(PyBool_Check(obj)) {
+        return create->createScalar(pvd::pvBoolean);
 #if PY_MAJOR_VERSION < 3
     } else if(PyInt_Check(obj)) {
         return create->createScalar(pvd::pvInt);
@@ -478,20 +480,23 @@ epics::pvData::Field::const_shared_pointer P4PType_guess(PyObject *obj)
         return create->createScalar(pvd::pvDouble);
     } else if(PyBytes_Check(obj) || PyUnicode_Check(obj)) {
         return create->createScalar(pvd::pvString);
+    } else if(PyList_Check(obj)) {
+        return create->createScalarArray(pvd::pvString);
     } else if(PyArray_Check(obj)) {
         switch(PyArray_TYPE(obj)) {
 #define CASE(NTYPE, PTYPE) case NTYPE: return create->createScalarArray(PTYPE);
         CASE(NPY_BOOL, pvd::pvBoolean) // bool stored as one byte
-        CASE(NPY_BYTE, pvd::pvByte)
-        CASE(NPY_SHORT, pvd::pvShort)
-        CASE(NPY_INT, pvd::pvInt)
-        CASE(NPY_LONG, pvd::pvLong)
-        CASE(NPY_UBYTE, pvd::pvUByte)
-        CASE(NPY_USHORT, pvd::pvUShort)
-        CASE(NPY_UINT, pvd::pvUInt)
-        CASE(NPY_ULONG, pvd::pvULong)
+        CASE(NPY_INT8, pvd::pvByte)
+        CASE(NPY_INT16, pvd::pvShort)
+        CASE(NPY_INT32, pvd::pvInt)
+        CASE(NPY_INT64, pvd::pvLong)
+        CASE(NPY_UINT8, pvd::pvUByte)
+        CASE(NPY_UINT16, pvd::pvUShort)
+        CASE(NPY_UINT32, pvd::pvUInt)
+        CASE(NPY_UINT64, pvd::pvULong)
         CASE(NPY_FLOAT, pvd::pvFloat)
         CASE(NPY_DOUBLE, pvd::pvDouble)
+        CASE(NPY_STRING, pvd::pvString)
 #undef CASE
         }
     }
